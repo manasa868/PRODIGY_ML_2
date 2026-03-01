@@ -1,0 +1,116 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+try:
+    df = pd.read_csv("Mall_Customers.csv")
+except FileNotFoundError:
+    print("Mall_Customers.csv not found in the current directory. Trying '/kaggle/input/customer-segmentation-tutorial-in-python/Mall_Customers.csv'...")
+    try:
+        df = pd.read_csv("/kaggle/input/customer-segmentation-tutorial-in-python/Mall_Customers.csv")
+    except FileNotFoundError:
+        print("Dataset still not found. Please upload 'Mall_Customers.csv' to your Colab environment or provide the correct path.")
+        if 'df' in locals():
+    print("Dataset loaded successfully. Displaying head, info, and describe:")
+    print(df.head())
+    print(df.info())
+    print(df.describe())
+else:
+    print("DataFrame 'df' was not created due to file loading errors.")
+    import zipfile
+import os
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+zip_file_path = '/content/archive (1).zip'
+extracted_dir = '/content/extracted_data'
+
+os.makedirs(extracted_dir, exist_ok=True)
+with zipfile.ZipFile(zip_file_path, 'r') as zip_ref:
+    zip_ref.extractall(extracted_dir)
+print(f"Extracted contents of {zip_file_path} to {extracted_dir}")
+
+extracted_files = os.listdir(extracted_dir)
+print(f"Files in extracted directory: {extracted_files}")
+
+
+csv_file_name = 'Mall_Customers.csv'
+csv_file_path = os.path.join(extracted_dir, csv_file_name)
+
+try:
+    df = pd.read_csv(csv_file_path)
+    print("Dataset loaded successfully from extracted archive.")
+    print("Displaying head, info, and describe:")
+    print(df.head())
+    print(df.info())
+    print(df.describe())
+except FileNotFoundError:
+    print(f"Error: {csv_file_name} not found in {extracted_dir} after extraction. Please verify the file name inside the zip.")
+except Exception as e:
+    print(f"An error occurred while loading the dataset: {e}")
+    from sklearn.preprocessing import StandardScaler
+X = df[['Age', 'Annual Income (k$)', 'Spending Score (1-100)']]
+print("Selected features (X.head()):")
+print(X.head())
+
+
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+print("\nScaled features (first 5 rows of X_scaled):")
+print(X_scaled[:5])
+from sklearn.cluster import KMeans
+import matplotlib.pyplot as plt
+
+wcss = []
+
+for k in range(1, 11):
+    kmeans = KMeans(n_clusters=k, random_state=42, n_init=10)
+    kmeans.fit(X_scaled)
+    wcss.append(kmeans.inertia_)
+
+plt.figure(figsize=(10, 6))
+plt.plot(range(1, 11), wcss, marker='o', linestyle='--')
+plt.xlabel('Number of Clusters (K)')
+plt.ylabel('WCSS')
+plt.title('Elbow Method for Optimal K')
+plt.grid(True)
+plt.show()
+
+print("WCSS values calculated for K from 1 to 10.")
+from sklearn.cluster import KMeans
+
+
+kmeans = KMeans(n_clusters=k, random_state=42, n_init=10)
+
+df['Cluster'] = kmeans.fit_predict(X_scaled)
+
+print(f"K-Means clustering applied with {k} clusters.")
+print("First 5 rows of DataFrame with new 'Cluster' column:")
+print(df.head())
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+
+print("Cluster characteristics (mean of features per cluster):")
+print(df.groupby('Cluster')[['Age', 'Annual Income (k$)', 'Spending Score (1-100)']].mean().round(2))
+
+
+plt.figure(figsize=(10, 8))
+sns.scatterplot(
+    x='Annual Income (k$)',
+    y='Spending Score (1-100)',
+    hue='Cluster',
+    data=df,
+    palette='viridis',
+    s=100, # size of points
+    alpha=0.8 # transparency
+)
+plt.title('Customer Segments by Annual Income and Spending Score')
+plt.xlabel('Annual Income (k$)')
+plt.ylabel('Spending Score (1-100)')
+plt.legend(title='Cluster')
+plt.grid(True, linestyle='--', alpha=0.6)
+plt.show()
